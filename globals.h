@@ -42,4 +42,9 @@ typedef struct line_data {
 
 } line_data;
 
+typedef struct op_code {
+    char *opcode;    /* The opcode corresponding to the operation */
+    int arg_num;     /* The number of arguments for the operation */
+} op_code;
+
 #endif
