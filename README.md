@@ -8,11 +8,11 @@ The assembler works in three main stages:
 
 These stages form the core algorithm of the assembler.
 
-*Pre-Processing*
+**Pre-Processing**
 The pre-assembler reads the source file line by line and identifies macro definitions. If a macro is identified, the lines of the macro are added to a macro table and replaced in the source file.
 
-*First Pass*
+**First Pass**
 The first pass identifies symbols (labels) and assigns them numerical values ​​that represent their corresponding memory addresses, and also begins to generate the binary code that does not depend on the labels
 
-*Second Pass*
+**Second Pass**
 In the second pass, the assembler generates the final machine code, replacing operation names with their binary equivalents and symbol names with their assigned memory locations.
