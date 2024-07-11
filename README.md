@@ -2,9 +2,10 @@ The project consists of multiple C and header files, each serving a specific pur
 
 The assembler works in three main stages:
 
-Pre-Processing
-First Pass
-Second Pass
+* Pre-Processing
+* First Pass
+*Second Pass
+
 These stages form the core algorithm of the assembler.
 
 Pre-Processing
