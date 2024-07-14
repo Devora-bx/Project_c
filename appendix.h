@@ -1,21 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-char *add_new_file(char *name_file, char *ending){
+
+//this function relate to main and add the ending to files
+char * add_new_file(char * name_file,char * ending){
     size_t length = strlen(name_file);
-     char* copy= (char*)malloc((length + 1) * sizeof(char));
+    char * copy; = (char*)malloc((length + 1) * sizeof(char));
     if (copy == NULL) {
-        // Handle memory allocation failure
         fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
-
+    strcpy(copy, name_file);
+    struct(copy,ending);
+    return copy;
 }
-strcpy(copy, name_file);
-    
-strcat(copy,ending);
 
-return copy;
+
+
+///////////////////this functions cleaning the files from extra space//////////////////////////////
 void remove_extra_spaces_str(char str[]) {
     /* i for original string, j for modified string */
     int i, j;
@@ -57,8 +59,7 @@ int is_space_or_tab(char c) {
     return (isspace(c) && c != '\n');
 }
 
-void remove_spaces_next_to_comma(char *str) 
-{
+void remove_spaces_next_to_comma(char *str) {
     char *ptr = str;
     /* If the line starts with ',' avoiding accessing outside the str */
     if(*ptr == ','){
@@ -82,5 +83,35 @@ void remove_spaces_next_to_comma(char *str)
         }
     }
 }
+/////////////////// all this function above cleaning the files///////////////////////////////////
 
-    
+void readMacrosFromFile(const char *filename, Macro **head) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Failed to open file");
+        return;
+    }
+
+    char line[1024];
+    while (fgets(line, sizeof(line), file)) {
+        if (strncmp(line, "macr", 4) == 0) {//if there a define of macro add it to the macro table//
+            char name[81];
+            char content[768];
+            if (sscanf(line, "macr %255s %767[^\n]", name, content) == 2) {
+                addMacro(head, name, content);
+            }
+        }
+        //if it is not defination of macro, not a instruction and not opcode or label, it is call of macro
+        else if(!instr_detection && !opcode_detection && !endsWithColon){
+            //check if the macro already declaration.
+            mcro_call_before_decl
+        }
+        else{
+            continue;
+        }
+    }
+
+    fclose(file);
+}
+
+
