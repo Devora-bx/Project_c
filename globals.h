@@ -47,4 +47,10 @@ typedef struct op_code {
     int arg_num;     /* The number of arguments for the operation */
 } op_code;
 
+typedef struct Macro{
+    char *name_of_macro;
+    char *content;
+    struct Macro *next; 
+}Macro;
+
 #endif

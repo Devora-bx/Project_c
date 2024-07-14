@@ -7,8 +7,8 @@ int implement_macro(char * file_name){
         fprintf(stderr, "Error opening file: %s\n", filename);
         exit(EXIT_FAILURE);
     }
-    
-
-  
+    remove_extra_spaces_str(file_name);
+    remove_spaces_next_to_comma(file_name);
+    readMacrosFromFile(file_name,Macro)
 }
  
