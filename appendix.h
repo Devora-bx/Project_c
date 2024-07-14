@@ -85,17 +85,6 @@ void remove_spaces_next_to_comma(char *str) {
 }
 /////////////////// all this function above cleaning the files///////////////////////////////////
 
-
-int mcro_call_before_decl(char *string, Macro *head){
-    int found_mac = 0;
-            while(head && !found_mac){
-                if(!strcmp(string,head->name)){
-                    found_mac = !found_mac;
-                }
-                head = head->next;
-            }
-            if(!found_mac){return 0;};
-}
 void readMacrosFromFile(const char *filename, Macro **head) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
