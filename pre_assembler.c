@@ -4,6 +4,7 @@
 #include "appendix.c"
 #include "pre_assembler.c"
 #include "globals.h"
+#include "appendix.h"
 
 int implement_macro(char * file_name){
     FILE *file;
