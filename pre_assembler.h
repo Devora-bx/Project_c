@@ -5,3 +5,4 @@ void remove_spaces_next_to_comma(char *str);
 void readMacrosFromFile(const char *filename, Macro **head);
 int implement_macro(char * file_name);
 char * add_new_file(char * name_file,char * ending);
+int is_valid_macro(char *name_file);

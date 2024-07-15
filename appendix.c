@@ -105,6 +105,9 @@ void readMacrosFromFile(const char *filename, Macro **head) {
             }
         }
     }
+    int is_valid_macro(char *name_file){
+        return 0;
+    }
 
     fclose(file);
 }
