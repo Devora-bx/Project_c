@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "appendix.c"
+#include "pre_assembler.c"
+#include "globals.h"
 
 //this function relate to main and add the ending to files
 char * add_new_file(char * name_file,char * ending){
     size_t length = strlen(name_file);
-    char * copy; = (char*)malloc((length + 1) * sizeof(char));
+    char * copy = (char*)malloc((length + 1) * sizeof(char));
     if (copy == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(1);

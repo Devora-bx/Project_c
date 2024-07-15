@@ -1,4 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "appendix.c"
+#include "pre_assembler.c"
+#include "globals.h"
 
 int main(int argc, char *argv[]) {
     char *as_file, *am_file;
