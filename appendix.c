@@ -101,7 +101,7 @@ void readMacrosFromFile(const char *filename, Macro **head) {
             char name[81];
             char content[768];
             if (sscanf(line, "macr %255s %767[^\n]", name, content) == 2) {
-                printf("will added")
+                printf("will added");
             }
         }
     }
