@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "appendix.c"
-#include "pre_assembler.c"
 #include "globals.h"
 #include "pre_assembler.h"
 
@@ -12,12 +10,12 @@ int implement_macro(char * file_name){
     /* Open the file for reading */
     file = fopen(file_name, "r");
     if (!file) {
-        fprintf(stderr, "Error opening file: %s\n", filename);
+        fprintf(stderr, "Error opening file: %s\n", file_name);
         exit(1);
     }
     remove_extra_spaces_str(file_name);
     remove_spaces_next_to_comma(file_name);
-    readMacrosFromFile(file_name,head);
+    readMacrosFromFile(file_name,&head);
     return 0;
 }
  

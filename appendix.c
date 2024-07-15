@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "pre_assembler.h"
-#include "pre_assembler.c"
 #include "globals.h"
 
 //this function relate to main and add the ending to files
@@ -14,7 +14,7 @@ char * add_new_file(char * name_file,char * ending){
         exit(1);
     }
     strcpy(copy, name_file);
-    struct(copy,ending);
+    strcat(copy, ending);
     return copy;
 }
 
@@ -101,16 +101,8 @@ void readMacrosFromFile(const char *filename, Macro **head) {
             char name[81];
             char content[768];
             if (sscanf(line, "macr %255s %767[^\n]", name, content) == 2) {
-                addMacro(head, name, content);
+                printf("will added")
             }
-        }
-        //if it is not defination of macro, not a instruction and not opcode or label, it is call of macro
-        else if(!instr_detection && !opcode_detection && !endsWithColon){
-            //check if the macro already declaration.
-            mcro_call_before_decl
-        }
-        else{
-            continue;
         }
     }
 

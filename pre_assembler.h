@@ -1,3 +1,4 @@
+#include "globals.h"
 void remove_extra_spaces_str(char str[]);
 int is_space_or_tab(char c);
 void remove_spaces_next_to_comma(char *str);
