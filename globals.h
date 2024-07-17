@@ -48,10 +48,15 @@ typedef struct op_code {
     int arg_num;     /* The number of arguments for the operation */
 } op_code;
 
-typedef struct Macro{
-    char *name_of_macro;
-    char *content;
-    struct Macro *next; 
-}Macro;
+typedef struct node {
+    char *macro_name;
+    char *macro_content;
+    struct node *next;
+} node;
+
+typedef struct Register{
+    char *name_of_register;
+    int reg_num;
+}
 
 #endif

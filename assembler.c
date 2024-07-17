@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
         as_file = add_new_file(argv[argc], ".as");
 
         /*Execute the macro preprocessor on the ".as" file.*/
-        if (is_valid_macro(as_file)) {
+        if (implement_macro(as_file)) {
             /*If it failed, move to the next file.*/
             printf("coolll");
 
