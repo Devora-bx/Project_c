@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "appendix.c"
-#include "pre_assembler.c"
+#include "pre_assembler.h"
 #include "globals.h"
 
 int main(int argc, char *argv[]) {
