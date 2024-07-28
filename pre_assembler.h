@@ -1,10 +1,11 @@
 #include "globals.h"
-char* remove_extra_spaces_file(char *file_name);
-void remove_extra_spaces_str(char str[]);
+#include <stdbool.h>
+char* remove_extra_spaces_file(char file_name[]);
+void remove_extra_spaces_str(char *str);
 int is_space_or_tab(char c);
 void remove_spaces_next_to_comma(char *str);
-void readMacrosFromFile(const char *filename, Macro **head);
-int implement_macro(char * file_name);
+void readMacrosFromFile(const char *filename, node **head);
+int implement_macro(char file_name[]);
 char * add_new_file(char * name_file,char * ending);
 int is_valid_macro_name(char *as_file);
 int instr_detection(char *str);

@@ -12,6 +12,8 @@
 /* arbitrary very big number for line length */
 #define BIG_NUMBER_CONST 1000
 
+#define INSTRUCTIONS_COUNT 4
+
 #define OPCODES_COUNT 16
 
 #define REG_COUNT 8
@@ -51,12 +53,13 @@ typedef struct op_code {
 typedef struct node {
     char *macro_name;
     char *macro_content;
+    int macro_line;
     struct node *next;
 } node;
 
 typedef struct Register{
     char *name_of_register;
     int reg_num;
-}
+}Register;
 
 #endif

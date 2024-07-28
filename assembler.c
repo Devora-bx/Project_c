@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
         /* Generate a new file with the ".as" extension by adding it to the input filename.*/
         printf("Start pre_assembler\n");
         as_file = add_new_file(argv[argc], ".as");
+        printf(" as_file is: %s",as_file);
 
         /*Execute the macro preprocessor on the ".as" file.*/
         if (implement_macro(as_file)) {

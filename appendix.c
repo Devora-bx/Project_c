@@ -6,60 +6,49 @@
 #include "globals.h"
 
 //this function relate to main and add the ending to files
-char * add_new_file(char * name_file,char * ending){
-    size_t length = strlen(name_file);
-    char * copy = (char*)malloc((length + 1) * sizeof(char));
-    if (copy == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(1);
+                                                                                                                                                                                                                    char *add_new_file(char *file_name, char *ending) {
+    char *c, *new_file_name;
+    new_file_name = handle_malloc(MAX_LINE_LENGTH * sizeof(char));
+    strcpy(new_file_name, file_name);
+    /* deleting the file name if a '.' exists and forth */
+    if ((c = strchr(new_file_name, '.')) != NULL) {
+        *c = '\0';
     }
-    strcpy(copy, name_file);
-    strcat(copy, ending);
-    return copy;
+    /* adds the ending of the new file name */
+    strcat(new_file_name, ending);
+    printf(" after add ending is: %s",new_file_name);
+    return new_file_name;
 }
-
-
-
 ///////////////////this functions cleaning the files from extra space//////////////////////////////
-char * remove_extra_spaces_str(char * file_name) {
-    /* i for original string, j for modified string */
-    int i, j;
-    char str[MAX_LINE_LENGTH];
+void remove_extra_spaces_str(char * str) {
+   int i, j;
     char str_temp[MAX_LINE_LENGTH];
     i = j = 0;
     /* eliminating white-spaces in the beginning of the line */
-    while (fgets(str, MAX_LINE_LENGTH, file) != NULL) {
-        i = j = 0;
-
-        /* Eliminate white-spaces at the beginning of the line */
-        while (is_space_or_tab(str[i])) {
+    while (is_space_or_tab(*(str + i))) {
+        i++;
+    }
+    while (*(str + i) != '\0') {
+        /* copying character */
+        while (!is_space_or_tab(*(str + i)) && *(str + i) != '\0') {
+            *(str_temp + j) = *(str + i);
+            i++;
+            j++;
+        }
+        /* if loop stopped because end of line char */
+        if (*(str + i) == '\0') {
+            break;
+        }
+        /* if loop stopped because of a white-space skipping them until another character is encountered*/
+        while (is_space_or_tab(*(str + i))) {
             i++;
         }
-        while (*(str + i) != '\0') {
-             while (!is_space_or_tab(*(str + i)) && *(str + i) != '\0') {
-                *(str_temp + j) = *(str + i);
-                i++;
-                j++;
-            }
-            /* if loop stopped because end of line char */
-            if (*(str + i) == '\0') {
-                break;
-            }
-            /* if loop stopped because of a white-space skipping them until another character is encountered*/
-            while (is_space_or_tab(*(str + i))) {
-                i++;
-            }
-            /* if stopped not because of end of line char then copy one space for all the others that were skipped */
-            if (!(*(str + i) == '\n' || *(str + i) == '\0')) {
-                *(str_temp + j) = ' ';
-                j++;
-            }
+        /* if stopped not because of end of line char then copy one space for all the others that were skipped */
+        if (!(*(str + i) == '\n' || *(str + i) == '\0')) {
+            *(str_temp + j) = ' ';
+            j++;
         }
-    
     }
-        /* copying character */
-         
-        
     *(str_temp + j) = *(str + i);
     *(str_temp + j + 1) = '\0';
     remove_spaces_next_to_comma(str_temp);
@@ -95,9 +84,9 @@ void remove_spaces_next_to_comma(char *str) {
         }
     }
 }
-/////////////////// all this function above cleaning the files///////////////////////////////////
+/*////////////////// all this function above cleaning the files///////////////////////////////////
 
-void readMacrosFromFile(const char *filename, Macro **head) {
+/void readMacrosFromFile(const char *filename, Macro **head) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         perror("Failed to open file");
@@ -117,7 +106,7 @@ void readMacrosFromFile(const char *filename, Macro **head) {
     
     fclose(file);
 }
-/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////*/
 
 void *handle_malloc(size_t size) {
     void *ptr = malloc(size);
@@ -133,9 +122,9 @@ node *make_node(char *name, char *content, int line_num){
     /* Check if memory allocation for the node succeeded */
     temp = handle_malloc(sizeof(node));
 
-    temp->name = name;        /* Set the name of the node */
-    temp->content = content;  /* Set the content string of the node */
-    temp->line = line_num;    /* Set the line number associated with the content */
+    temp->macro_name = name;        /* Set the name of the node */
+    temp->macro_content = content;  /* Set the content string of the node */
+    temp->macro_line = line_num;    /* Set the line number associated with the content */
     temp->next = NULL;        /* Initialize the next pointer to NULL */
 
     return temp;  /* Return a pointer to the newly created node */
@@ -148,8 +137,8 @@ node *search_list(node *head, char *name, int *found){
         return NULL;
     }
 
-    /* If the node exists already */
-    if (strcmp(name, head->name) == 0) {
+    /* fix to check if this is defination*/
+    if (strcmp(name, head->macro_name) == 0) {
         *found = 1;
         printf("Node %s already exists in the list\n", name);
         return head;
@@ -163,11 +152,11 @@ node *search_list(node *head, char *name, int *found){
     /* Recursively search the rest of the list */
     return search_list(head->next, name, found);
 }
-//////////////////////////////////////////////////////////////////////////////
+
 int is_valid_macro_name(char *name_macr){
     return(!instr_detection(name_macr) && !opcode_detection(name_macr) && !reg_detection(name_macr) && !extra_char_detection(name_macr));
  }
-//////////////////////////////////////////////////////////////////////////////////
+
 void add_macro_to_list(node **head, char *name, char *content, int line_num){
     int found;
     node *new_node, *temp;
@@ -179,7 +168,7 @@ void add_macro_to_list(node **head, char *name, char *content, int line_num){
     temp = search_list(*head,name,&found);
 
     /* If the list already has a macro with the same name */
-    if(found && strcmp(temp->content,content) != 0){
+    if(!found && strcmp(temp->macro_content,content) != 0){
         /* The content of the same node name is not the same - skipping this macro definition */
         printf("ERROR_CODE_13");
         free(name);
@@ -205,8 +194,8 @@ void add_macro_to_list(node **head, char *name, char *content, int line_num){
 
 void free_node(node *node1){
     /* Free memory allocated for the name, content and node */
-    free(node1->name);
-    free(node1->content);
+    free(node1->macro_name);
+    free(node1->macro_content);
     free(node1);
 }
 

@@ -1,21 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include "globals.h"
 #include "pre_assembler.h"
-/////////////////////////////////////////////////////////////
-char* remove_extra_spaces_file(char *file_name) {
-    FILE *orig_file, *temp_file;
+
+char* remove_extra_spaces_file(char file_name[]) {
+	errno = 0;
+    
     char *new_file_name;
     char str[BIG_NUMBER_CONST];
     int num_line = 0;
-
+    FILE *orig_file, *temp_file;
+    
+    printf("Opening file: %s\n", file_name);
     orig_file = fopen(file_name, "r");
+
     if (orig_file == NULL){
+	printf("%d",errno);
         printf("Error opening original file\n");
         return NULL;
     }
-
+    
     new_file_name = add_new_file(file_name, ".t01");
     if (new_file_name == NULL) {
         fclose(orig_file);
@@ -36,6 +42,7 @@ char* remove_extra_spaces_file(char *file_name) {
             printf("Line %d too long\n", num_line);
             fclose(orig_file);
             fclose(temp_file);
+	    free(new_file_name);
             return NULL;
         } else if (*str == ';') {
             *str = '\n';
@@ -50,8 +57,9 @@ char* remove_extra_spaces_file(char *file_name) {
     fclose(temp_file);
     return new_file_name;
 }
-///////////////////////////////////////////////////////////////
+
 int add_macro(char *file_name, node **head) {
+    
     FILE *file = fopen(file_name, "r");
     if (file == NULL) {
         perror("Error opening file");
@@ -60,34 +68,42 @@ int add_macro(char *file_name, node **head) {
 
     char line[MAX_LINE_LENGTH];
     char *macro_name = NULL;
-    char macro_content[MAX_LINE_LENGTH * 100] = ""; // מקום לשמירת תוכן המאקרו
-    int is_macro = 0; // דגל לזיהוי אם אנחנו בתוך מאקרו
-    int line_number = 0; // מספר השורה
+    char macro_content[MAX_LINE_LENGTH * 100] = ""; 
+    int is_macro = 0; 
+    int line_number = 0;
+    int mcro_line; 
 
     while (fgets(line, sizeof(line), file)) {
         line_number++;
         if (strncmp(line, "macr ", 5) == 0) {
-            int mcro_line=line_number;
+           if(search_list(&head,line,0)){
+             continue;
+           } 
+            //add search in the list
+            mcro_line=line_number;
+	        printf("found macr");
             char temp_name[MAX_LINE_LENGTH];
             sscanf(line + 5, "%s", temp_name);
             if (is_valid_macro_name(temp_name)) {
                 is_macro = 1;
-                macro_content[0] = '\0'; // אתחול תוכן המאקרו
+                macro_content[0] = '\0'; 
                 macro_name = handle_malloc((strlen(temp_name) + 1) * sizeof(char));
                 strcpy(macro_name, temp_name);
             } else {
-                // שם המאקרו לא תקין
+               
                 fprintf(stderr, "Invalid macro name at line %d: %s\n", line_number, temp_name);
                 continue;
             }
         } else if (is_macro && strncmp(line, "endmacr", 7) == 0) {
-            // מצאנו סיום מאקרו
+             /*printf(" the list is ");*/
+            
             add_macro_to_list(head, macro_name, macro_content,mcro_line);
+           
             is_macro = 0;
             free(macro_name);
             macro_name = NULL;
         } else if (is_macro) {
-            // אנחנו בתוך מאקרו, שמור את השורה בתוכן המאקרו
+            
             strcat(macro_content, line);
         }
     }
