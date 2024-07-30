@@ -120,3 +120,7 @@ int extra_char_detection(char *str) {
     free(rest_of_line);
     return 0; /*No extra character*/
 }
+// if the string start with point its should be instruction
+int is_instruction(char * str){
+    return(*str == '.');
+}

@@ -58,7 +58,8 @@ char* remove_extra_spaces_file(char file_name[]) {
     return new_file_name;
 }
 
-int add_macro(char *file_name, node **head) {
+int 
+add_macro(char *file_name, node **head) {
     
     FILE *file = fopen(file_name, "r");
     if (file == NULL) {
@@ -83,9 +84,11 @@ int add_macro(char *file_name, node **head) {
 	        
             char temp_name[MAX_LINE_LENGTH];
             sscanf(line + 5, "%s", temp_name);
+            
             temp = search_list(*head,temp_name,line,&found);
+             
             if(found){
-                printf("try 100000");
+                
                 continue;
             }
             if (is_valid_macro_name(temp_name)) {
@@ -100,6 +103,7 @@ int add_macro(char *file_name, node **head) {
                 continue;
             }
         } else if (is_macro && strncmp(line, "endmacr", 7) == 0) {
+            printf(" the content of  macro is: %s\n",macro_content);
            
             add_macro_to_list(head, macro_name, macro_content,mcro_line,temp);
            
@@ -117,5 +121,14 @@ int add_macro(char *file_name, node **head) {
     }
 
     fclose(file);
-    return 0;
+    return 1;
+}
+void printlist(node *head){
+    while (head)
+    {
+        printf("the name of macr: %s\n",head->macro_name);
+        printf("the content of macr: %s\n",head->macro_content);
+        head = head->next;
+    }
+    
 }

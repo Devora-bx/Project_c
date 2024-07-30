@@ -126,7 +126,7 @@ node *make_node(char *name, char *content, int line_num){
     temp->macro_content = content;  /* Set the content string of the node */
     temp->macro_line = line_num;    /* Set the line number associated with the content */
     temp->next = NULL;        /* Initialize the next pointer to NULL */
-
+    printf(" the node that i make is: %s and the content is: %s\n",temp->macro_name,temp->macro_content);
     return temp;  /* Return a pointer to the newly created node */
 }
 node *search_list(node *head, char *name,char *line, int *found){
@@ -136,9 +136,9 @@ node *search_list(node *head, char *name,char *line, int *found){
     if (head == NULL) {
         return NULL;
     }
-
+   
     /* fix to check if this is defination*/
-    if ((strcmp(name, head->macro_name) == 0)&&(strstr("macr",line))) {
+    if ((strcmp(name, head->macro_name) == 0)&&(strstr(line,"macr")!= NULL)) {
         *found = 1;
         printf("Node %s already exists in the list\n", name);
         return head;
@@ -157,27 +157,158 @@ int is_valid_macro_name(char *name_macr){
     return(!instr_detection(name_macr) && !opcode_detection(name_macr) && !reg_detection(name_macr) && !extra_char_detection(name_macr));
  }
 
-void add_macro_to_list(node **head, char *name, char *content, int line_num,node *temp) {
+void add_macro_to_list(node **head, char *name, char *content, int line_num, node *temp) {
     int found = 0;
     node *new_node;
 
-    // temp = search_list(*head, name,line, &found);
-    
+    // Create a copy of the content to store in the new node
+    char *content_copy = handle_malloc(strlen(content) + 1);
+    strcpy(content_copy, content);
+
     if (found) {
-        if (strcmp(temp->macro_content, content) != 0) {
+        if (strcmp(temp->macro_content, content_copy) != 0) {
             printf("ERROR_CODE_13\n");
             free(name);
-            free(content);
+            free(content_copy);
             return;
         }
     } else {
-       
-        new_node = make_node(name, content, line_num);
+        printf("Right now before add to the list the macro is: %s, and the content is: %s\n", name, content_copy);
+        new_node = make_node(name, content_copy, line_num);
 
         if (temp == NULL) {
             *head = new_node;
         } else {
             temp->next = new_node;
+        }
+    }
+}
+
+
+char *remove_mcros_decl(char file_name[]) {
+    char *token, *new_file;
+    char str[MAX_LINE_LENGTH];
+    char str_copy[MAX_LINE_LENGTH];
+    FILE *inFile, *outFile;
+
+    /* Open the input file for reading */
+    inFile = fopen(file_name, "r");
+    if (inFile == NULL) {
+        printf("Failed to open file for reading");
+        return NULL;
+    }
+
+    /* Create a new filename with the ".t02" extension */
+    new_file = add_new_file(file_name, ".t02");
+
+    /* Open the new file for writing */
+    outFile = fopen(new_file, "w");
+    if (outFile == NULL) {
+        printf("Failed to open new file for writing");
+        free(inFile);
+        remove(new_file);
+        free(new_file);
+        return NULL;
+    }
+
+    /* Process the input file line by line */
+    while (fgets(str, MAX_LINE_LENGTH, inFile)) {
+        /* copying the line so we can manipulate one copy */
+        strcpy(str_copy, str);/*str_copyמעתיק את שורת המחרוזת המקורית ל*/
+        token = strtok(str, " \n");/* מצביע לתחילת המחרוזת str token */
+
+        /* blank line */
+        if (token == NULL) {/* בודק אם השורה ריקה */
+            fprintf(outFile, "\n");/*כותה את השורה הריקה לקובץ הפלט וממשיך ללולאה הבאה */
+            continue;
+        }
+
+        /* mcro was found */
+        if (strcmp(token, "macr") == 0) {
+            /* Skip lines until the "endmcro" marker is found */
+            while (strcmp(token, "endmacr") != 0) {
+                fprintf(outFile, "\n");
+                fgets(str, MAX_LINE_LENGTH, inFile);
+                token = strtok(str, " \n");
+
+                /* blank lines */
+                while (token == NULL) {
+                    fprintf(outFile, "\n");
+                    fgets(str, MAX_LINE_LENGTH, inFile);
+                    token = strtok(str, " \n");
+                }
+            }
+            fprintf(outFile, "\n");
+        } else {
+            /* Write the line to the new file if it's not part of a macro declaration */
+            fprintf(outFile, "%s", str_copy);
+        }
+    }
+    /*Close file ptr*/
+    fclose(inFile);
+    fclose(outFile);
+
+    /* Return the name of the new file without macros */
+    return new_file;
+}
+
+char * replace_all_mcros(char *file_name, node *head){
+   FILE *inFile, *outFile;
+    char *new_file;
+
+    inFile = fopen(file_name, "r");
+    if (inFile == NULL) {
+        perror("Unable to open file");
+        return NULL;
+    }
+
+    new_file = add_new_file(file_name, ".t03");
+
+    // Open the new file for writing
+    outFile = fopen(new_file, "w");
+    if (outFile == NULL) {
+        perror("Unable to open new file");
+        fclose(inFile);
+        free(new_file);
+        return NULL;
+    }
+
+    char str[MAX_LINE_LENGTH];
+    char strcopy[MAX_LINE_LENGTH];
+
+    while (fgets(str, MAX_LINE_LENGTH, inFile)) {
+        strcpy(strcopy, str);
+        // trim_whitespace(strcopy);
+        char *first_token = strtok(strcopy, " ");
+
+        // If there's no second token, it means there's only one word in the line
+        // and the line not space
+        if ((strtok(NULL, " ") == NULL)&& !is_space_or_tab(*str)) {
+            node *current = head;
+
+            // Check if the word matches any macro name
+            int found = 0;
+            while (current) {
+                // printf(" the optional macro is: %s \n",str);
+                // printf(" the current name in the list: %s\n",current->macro_name);
+                if (strncmp(current->macro_name, str,strlen(current->macro_name)) == 0) {
+                    // printf(" replace macr\n");
+                    // printf("the content will be replace is: %s",current->macro_content);
+                    fprintf(outFile, "%s\n", current->macro_content);
+                    found = 1;
+                    
+                    break;
+                }
+                current = current->next;
+            }
+
+            // If no matching macro found, write the original line
+            if (!found) {
+                fprintf(outFile, "%s", str);
+            }
+        } else {
+            // Write the original line if it contains more than one word
+            fprintf(outFile, "%s", str);
         }
     }
 }
@@ -197,3 +328,4 @@ void free_list(node *head){
         free_node(temp);
     }
 }
+

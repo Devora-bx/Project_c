@@ -20,3 +20,6 @@ void add_macro_to_list(node **head, char *name, char *content, int line_num,node
 void free_node(node *node1);
 void free_list(node *head);
 int add_macro(char *file_name, node **head);
+char *remove_mcros_decl(char file_name[]);
+char * replace_all_mcros(char *file_name, node *head);
+void printlist(node *head);
