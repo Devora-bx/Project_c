@@ -6,7 +6,7 @@
 #include "globals.h"
 
 //this function relate to main and add the ending to files
-                                                                                                                                                                                                                    char *add_new_file(char *file_name, char *ending) {
+ char *add_new_file(char *file_name, char *ending) {
     char *c, *new_file_name;
     new_file_name = handle_malloc(MAX_LINE_LENGTH * sizeof(char));
     strcpy(new_file_name, file_name);
@@ -16,7 +16,7 @@
     }
     /* adds the ending of the new file name */
     strcat(new_file_name, ending);
-    printf(" after add ending is: %s",new_file_name);
+    
     return new_file_name;
 }
 ///////////////////this functions cleaning the files from extra space//////////////////////////////
@@ -129,7 +129,7 @@ node *make_node(char *name, char *content, int line_num){
 
     return temp;  /* Return a pointer to the newly created node */
 }
-node *search_list(node *head, char *name, int *found){
+node *search_list(node *head, char *name,char *line, int *found){
     *found = 0;
 
     /* If the list is empty */
@@ -138,7 +138,7 @@ node *search_list(node *head, char *name, int *found){
     }
 
     /* fix to check if this is defination*/
-    if (strcmp(name, head->macro_name) == 0) {
+    if ((strcmp(name, head->macro_name) == 0)&&(strstr("macr",line))) {
         *found = 1;
         printf("Node %s already exists in the list\n", name);
         return head;
@@ -150,43 +150,33 @@ node *search_list(node *head, char *name, int *found){
     }
 
     /* Recursively search the rest of the list */
-    return search_list(head->next, name, found);
+    return search_list(head->next, name,line,found);
 }
-
 int is_valid_macro_name(char *name_macr){
+     
     return(!instr_detection(name_macr) && !opcode_detection(name_macr) && !reg_detection(name_macr) && !extra_char_detection(name_macr));
  }
 
-void add_macro_to_list(node **head, char *name, char *content, int line_num){
-    int found;
-    node *new_node, *temp;
-    found = 0;
+void add_macro_to_list(node **head, char *name, char *content, int line_num,node *temp) {
+    int found = 0;
+    node *new_node;
 
-    /* Temp is the immediate parent of the new node in the list
-     * or if the macro name already exists in the list, temp is the mcro with the same name.
-     * */
-    temp = search_list(*head,name,&found);
-
-    /* If the list already has a macro with the same name */
-    if(!found && strcmp(temp->macro_content,content) != 0){
-        /* The content of the same node name is not the same - skipping this macro definition */
-        printf("ERROR_CODE_13");
-        free(name);
-        free(content);
-        return;
-    }
-
-    /* If the macro with the same name is not found in the list */
-    if(!found){
-        new_node = make_node(name,content,line_num);
-
-        /* If the list is empty, add the new node to the head of the list */
-        if(temp == NULL){
-            *head = new_node;
+    // temp = search_list(*head, name,line, &found);
+    
+    if (found) {
+        if (strcmp(temp->macro_content, content) != 0) {
+            printf("ERROR_CODE_13\n");
+            free(name);
+            free(content);
+            return;
         }
+    } else {
+       
+        new_node = make_node(name, content, line_num);
 
-        /* If the list is not empty, add the new node down the list */
-        else{
+        if (temp == NULL) {
+            *head = new_node;
+        } else {
             temp->next = new_node;
         }
     }
