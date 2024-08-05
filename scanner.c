@@ -3,7 +3,14 @@
 #include <string.h>
 #include <stdbool.h>
 #include "globals.h"
-char *INSTRUCTIONS[] = {".data", ".string", ".extern", ".entry"};
+#include "first_pass.h"
+instr INSTRUCTIONS[] = {
+    {".data",check_valid_data},
+    {".string",check_valid_string},
+    {".extern",check_valid_extern},
+    {".entry",check_valid_entry} 
+    };
+char * INSTRUCTION[] = {".data",".string",".extern",".entry"};
 Register REGISTERS[] = {
     {"r0",1},
     {"r1",2},
@@ -44,7 +51,23 @@ int instr_detection(char *str) {
 
     /* Iterate through the list of known instructions and compare the string with each instruction in the list */
     for (i = 0; i < INSTRUCTIONS_COUNT; i++) {
-        if (strcmp(str, INSTRUCTIONS[i]) == 0) {
+        if (strcmp(str, INSTRUCTION[i]) == 0) {
+            return 1; /* Return 1 if the string matches an instruction */
+        }
+    }
+    return 0; /* Return 0 if the string is not a valid instruction */
+}
+
+int instr_detection_and_execute(char *first_word, char *rest_of_line) {
+    int i;
+    /* Return 0 if the string is NULL */
+    if (first_word == NULL) {
+        return 0;
+    }
+    /* Iterate through the list of known instructions and compare the string with each instruction in the list */
+    for (i = 0; i < INSTRUCTIONS_COUNT; i++) {
+        if (strcmp(first_word, INSTRUCTIONS[i].name_of_instr) == 0) {
+            INSTRUCTIONS[i].func(rest_of_line); /* Execute the function if the string matches an instruction */
             return 1; /* Return 1 if the string matches an instruction */
         }
     }

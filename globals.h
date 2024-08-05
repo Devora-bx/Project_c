@@ -62,4 +62,16 @@ typedef struct Register{
     int reg_num;
 }Register;
 
+typedef struct label{
+    char *name_of_label;
+    char * type_of_label;
+    int address_of_label;
+    struct label *next;
+}label;
+
+typedef struct instr{
+    char * name_of_instr;
+    void (*func)(char *);
+}instr;
+
 #endif

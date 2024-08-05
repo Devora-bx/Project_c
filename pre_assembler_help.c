@@ -58,8 +58,7 @@ char* remove_extra_spaces_file(char file_name[]) {
     return new_file_name;
 }
 
-int 
-add_macro(char *file_name, node **head) {
+int add_macro(char *file_name, node **head) {
     
     FILE *file = fopen(file_name, "r");
     if (file == NULL) {

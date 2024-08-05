@@ -126,7 +126,7 @@ node *make_node(char *name, char *content, int line_num){
     temp->macro_content = content;  /* Set the content string of the node */
     temp->macro_line = line_num;    /* Set the line number associated with the content */
     temp->next = NULL;        /* Initialize the next pointer to NULL */
-    printf(" the node that i make is: %s and the content is: %s\n",temp->macro_name,temp->macro_content);
+    // printf(" the node that i make is: %s and the content is: %s\n",temp->macro_name,temp->macro_content);
     return temp;  /* Return a pointer to the newly created node */
 }
 node *search_list(node *head, char *name,char *line, int *found){
@@ -173,7 +173,7 @@ void add_macro_to_list(node **head, char *name, char *content, int line_num, nod
             return;
         }
     } else {
-        printf("Right now before add to the list the macro is: %s, and the content is: %s\n", name, content_copy);
+        // printf("Right now before add to the list the macro is: %s, and the content is: %s\n", name, content_copy);
         new_node = make_node(name, content_copy, line_num);
 
         if (temp == NULL) {
@@ -252,8 +252,9 @@ char *remove_mcros_decl(char file_name[]) {
     return new_file;
 }
 
-char * replace_all_mcros(char *file_name, node *head){
-   FILE *inFile, *outFile;
+
+char* replace_all_mcros(char *file_name, node *head) {
+    FILE *inFile, *outFile;
     char *new_file;
 
     inFile = fopen(file_name, "r");
@@ -262,7 +263,7 @@ char * replace_all_mcros(char *file_name, node *head){
         return NULL;
     }
 
-    new_file = add_new_file(file_name, ".t03");
+    new_file = add_new_file(file_name, ".am");
 
     // Open the new file for writing
     outFile = fopen(new_file, "w");
@@ -278,39 +279,31 @@ char * replace_all_mcros(char *file_name, node *head){
 
     while (fgets(str, MAX_LINE_LENGTH, inFile)) {
         strcpy(strcopy, str);
-        // trim_whitespace(strcopy);
         char *first_token = strtok(strcopy, " ");
 
-        // If there's no second token, it means there's only one word in the line
-        // and the line not space
-        if ((strtok(NULL, " ") == NULL)&& !is_space_or_tab(*str)) {
+        if ((strtok(NULL, " ") == NULL) && !is_space_or_tab(*str)) {
             node *current = head;
-
-            // Check if the word matches any macro name
             int found = 0;
             while (current) {
-                // printf(" the optional macro is: %s \n",str);
-                // printf(" the current name in the list: %s\n",current->macro_name);
-                if (strncmp(current->macro_name, str,strlen(current->macro_name)) == 0) {
-                    // printf(" replace macr\n");
-                    // printf("the content will be replace is: %s",current->macro_content);
+                if (strncmp(current->macro_name, str, strlen(current->macro_name)) == 0) {
                     fprintf(outFile, "%s\n", current->macro_content);
                     found = 1;
-                    
                     break;
                 }
                 current = current->next;
             }
-
-            // If no matching macro found, write the original line
             if (!found) {
                 fprintf(outFile, "%s", str);
             }
         } else {
-            // Write the original line if it contains more than one word
             fprintf(outFile, "%s", str);
         }
     }
+
+    fclose(inFile);
+    fclose(outFile);
+
+    return new_file;
 }
 
 void free_node(node *node1){

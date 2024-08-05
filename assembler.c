@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "pre_assembler.h"
+#include "first_pass.h"
 #include "globals.h"
 
 int main(int argc, char *argv[]) {
@@ -21,14 +22,15 @@ int main(int argc, char *argv[]) {
     printf("Start first pass\n");
          /*Generate a new file with the ".am" extension by adding it to the input filename.*/
         am_file = add_new_file(argv[argc], ".am");
+        printf("the am file is: %s\n",am_file);
         /*Execute the first pass, and then the second on the ".am" file.*/
         if (implement_first_pass(am_file)) {
             /*If it failed, move to the next file.*/
             continue;
         }
 
-        /*Free allocated memory*/
-        free(am_file);
+    //     /*Free allocated memory*/
+    //     free(am_file);
         
         free(as_file);
         
