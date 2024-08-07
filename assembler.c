@@ -9,16 +9,16 @@ int main(int argc, char *argv[]) {
     char *as_file, *am_file;
     while(--argc){
         /* Generate a new file with the ".as" extension by adding it to the input filename.*/
-        printf("Start pre_assembler\n");
-        as_file = add_new_file(argv[argc], ".as");
+    //     printf("Start pre_assembler\n");
+    //     as_file = add_new_file(argv[argc], ".as");
 
-        /*Execute the macro preprocessor on the ".as" file.*/
-        if (implement_macro(as_file)) {
-            /*If it failed, move to the next file.*/
-            printf(" implemented macro ! ");
+    //     /*Execute the macro preprocessor on the ".as" file.*/
+    //     if (implement_macro(as_file)) {
+    //         /*If it failed, move to the next file.*/
+    //         printf(" implemented macro ! ");
 
 
-    }
+    // }
     printf("Start first pass\n");
          /*Generate a new file with the ".am" extension by adding it to the input filename.*/
         am_file = add_new_file(argv[argc], ".am");

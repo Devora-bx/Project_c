@@ -18,7 +18,9 @@ bne LOOP
 
 XYZ: mov @r4,@r2
 
-M1
+sub @r1,@r9
+bne END
+
 
 L1: inc K
 bne LOOP
@@ -28,11 +30,14 @@ stopp
 STR: .string "666"abcdef"
 LENGTH: .data 6,-9,15
 K: .data 4,,-55,4,4,4,6
+.data,,5,8,9
 
 
 
 
-M2
+sub @r1,@r9
+bne END
+
 ABC: mov XYZ,@r3
 reg1: .data 6,5,-555,66
 reg2: .data 6,5,-555,66
