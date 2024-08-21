@@ -32,7 +32,9 @@ K: .data 4,,-55,4,4,4,6
 
 
 
-M2
+mov reg1,val
+add reg2,reg1
+
 ABC: mov XYZ,@r3
 reg1: .data 6,5,-555,66
 reg2: .data 6,5,-555,66

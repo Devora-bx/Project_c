@@ -16,7 +16,7 @@ sub @r1, @r9
 prn -5
 bne LOOP
 
-XYZ: mov @r4, @r2
+mov @r4, @r2
 
 M1
 
