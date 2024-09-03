@@ -22,22 +22,23 @@ int label_process(char* first_word, int* p_address, label** label_head,char *typ
 	if (!found) {
 		if (is_valid_label(first_word)) {
 			add_label_to_list(first_word, p_address, label_head,type_of_label);
+			return 1;
 		}
 	}
 
-	return 1;
+	return 0;
 }
 
 char* duplicate(const char* str)
 {
-	char* new_str = (char*)malloc((strlen(str) + 1) * sizeof(char));
+	char* new_str = (char*)handle_malloc((strlen(str) + 1) * sizeof(char));
 	strcpy(new_str, str);
 	return new_str;
 }
 
 /* Function to add a new label to the list */
 void add_label_to_list(char* name_of_label, int* address_of_label, label** head,char *type_of_label) {
-	label* new_label = (label*)malloc(sizeof(label));
+	label* new_label = (label*)handle_malloc(sizeof(label));
 	if (new_label == NULL) {
 		perror("Failed to allocate memory for new label");
 		exit(EXIT_FAILURE);
@@ -78,7 +79,6 @@ label* search_label_on_list(label* head, char* name_of_label, int* found) {
 	while (current != NULL) {
 		if (strcmp(name_of_label, current->name_of_label) == 0) {
 			*found = 1;
-			printf("label %s already defined\n", name_of_label);
 			return current;
 		}
 		current = current->next;
@@ -93,25 +93,24 @@ int is_valid_label(char* name_of_label) {
 		!opcode_detection(name_of_label) &&
 		!reg_detection(name_of_label) &&
 		!extra_char_detection(name_of_label) &&
-		isalpha(*name_of_label));
+		isalpha(*name_of_label))&&
+		is_alphanumeric_string(name_of_label);
 }
 
 
-int instruction_data_process(char* first_word, char* rest_of_line, int* DC, int line, data_image** data_image_head) {
-	if (!instr_data_detection(first_word, rest_of_line, DC, line, data_image_head)) {
-		printf("undefinde instruchion");
+int instruction_data_process(char *str,char* first_word, char* rest_of_line, int* DC, int line, data_image** data_image_head) {
+	if (!instr_data_detection(str,first_word, rest_of_line, DC, line, data_image_head)) {
+		printf("undefinde instruchion in line: %d\n",line);
 		return 0;
 	}
 	return 1;
 }
-/*
-הפונקציה גם בודקת שאין פסיקים רצופים
-פונקציה שבודקת אם המספרים הם מספרים שלמים חוקיים , אפשר - או + לפני*/
+
 void check_valid_data(char* rest_of_line, int* DC, int line, data_image** data_image_head) {
 	char* token;
 	
 	if (check_valid_data_comma(rest_of_line)) {
-		/*גיבוי המחרוזת לפני השימוש ב-strtok*/
+
 		char rest_of_line_copy[MAX_LINE_LENGTH];
 		strncpy(rest_of_line_copy, rest_of_line, MAX_LINE_LENGTH);
 		token = strtok(rest_of_line_copy, ",");
@@ -134,19 +133,17 @@ void check_valid_data(char* rest_of_line, int* DC, int line, data_image** data_i
 		printf("Invalid data format in line: %d\n", line);
 	}
 }
-/*פונקציה זו בודקת עם המחרוזת שנשלחה תקינה כלומר בודקת אם המרוזת מתיחה ומסתיימת בתו כפול*/
+
 void check_valid_string(char* rest_of_line, int* DC, int line, data_image** data_image_head) {
 	int i;
 	if (starts_and_ends_with_quote(rest_of_line)) {
 		
-		/*הוספת תווים לרשימה המקושרת*/
-		for (i = 1; i < (int)strlen(rest_of_line) - 1; i++) { /*מתחילים מהתו הראשון לאחר הציטוט הראשון ועד לתו לפני הציטוט האחרון*/
-			
+		for (i = 1; i < (int)strlen(rest_of_line) - 1; i++) { 
 			add_to_data_image((int)rest_of_line[i],*DC, data_image_head,line);
 			(*DC)++;
 		}
 		
-		add_to_data_image((int)'\0',*DC, data_image_head,line); /*הוספת תו סוף המחרוזת*/
+		add_to_data_image((int)'\0',*DC, data_image_head,line);
 		(*DC)++;
 	}
 	else {
@@ -154,29 +151,7 @@ void check_valid_string(char* rest_of_line, int* DC, int line, data_image** data
 	}
 }
 
-int check_valid_entry(char* rest_of_line, int* DC, label* label_head) {
-	label* lbl = find_label_by_name(rest_of_line, label_head);
-	char* label;
-	if (lbl != NULL) {
-		printf("should update lable: %s to entry type", rest_of_line);
-		update_label_type(lbl, ".entry");
-		printf("the label after update is: %s\n", lbl->type_of_label);
-		label = malloc(strlen(rest_of_line) + 20); /* 20 is a safe over-estimation for the integer conversion */
-		if (!label) {
-			fprintf(stderr, "Memory allocation failed\n");
-			return 0;
-		}
 
-		/* Create the new string */
-		sprintf(label, "%s %d\n", rest_of_line, *DC);
-
-		return 1;
-	}
-	else {
-		printf("Label %s not found in current file and can't defined as entry\n", rest_of_line);
-		return 0;
-	}
-}
 void update_data_label(label *label_head,int IC){
 	label* current = label_head;
 	while (current != NULL) {
@@ -195,31 +170,26 @@ void update_data_label(label *label_head,int IC){
 void add_to_data_image(int value, int address, data_image** data_image_head, int line) {
     
 
-    // הקצאת זיכרון למחרוזת הבינארית (16 ביטים + '\0' לסיום)
-    char binary_value[17]; 
-    binary_value[16] = '\0';
+    int i;
+    char binary_value[16]; 
+    data_image* new_node;
+    binary_value[15] = '\0';
+    
 
-    // המרה לבינארית
-    for (int i = 15; i >= 0; i--) {
+  
+    for (i = 14; i >= 0; i--) {
         binary_value[i] = (value & 1) ? '1' : '0';
         value >>= 1;
     }
-   
 
-    // יצירת צומת חדש ל-data_image
-    data_image* new_node = (data_image*)malloc(sizeof(data_image));
-    if (new_node == NULL) {
-        printf("Memory allocation failed\n");
-        return; // יציאה אם הקצאת הזיכרון נכשלה
-    }
+    new_node = (data_image*)handle_malloc(sizeof(data_image));
     
-    new_node->binary_value = strdup(binary_value); // שכפול המחרוזת
+    new_node->binary_value = duplicate(binary_value);
     new_node->address = address;
     new_node->line = line;
     new_node->next = NULL;
     
 
-    // הוספת הצומת לרשימה המקושרת
     if (*data_image_head == NULL) {
         *data_image_head = new_node;
     } else {
@@ -236,7 +206,7 @@ void add_to_data_image(int value, int address, data_image** data_image_head, int
 
 
 void add_to_instruction_memory(int line,int address,char* binary_str , instruction_memory** instruction_memory_head) {
-	instruction_memory* new_instruction = (instruction_memory*)malloc(sizeof(instruction_memory));
+	instruction_memory* new_instruction = (instruction_memory*)handle_malloc(sizeof(instruction_memory));
 	new_instruction->address = address;
 	new_instruction->line = line;
 	new_instruction->binary_str = duplicate(binary_str);
@@ -264,7 +234,6 @@ label* find_label_by_name(const char* name_of_label, label* label_head) {
 	return NULL;
 }
 void update_label_type(label* lbl, const char* new_type) {
-	/* printf("in update type!!\n"); */
 	if (lbl->type_of_label != NULL) {
 		free(lbl->type_of_label);
 	}
@@ -291,8 +260,8 @@ void create_entry_file(const char* filename, const char* rest_of_line, label* la
 
 void convert_str_to_binary(int length, char *str, char *ARE) {
     char *token;
-    char binary[16];
-    char result[30] = "";
+    char binary[WORD_LEN];
+    char result[FILED_SIZE] = "";
 	if(str[0]=='\0' ||!strcmp(str,"NULL")){/*if its label or empty argument*/
 		return;
 	}
@@ -306,7 +275,6 @@ void convert_str_to_binary(int length, char *str, char *ARE) {
 		}
 
 		strcat(result, ARE);
-		printf("Converted to Binary: %s\n", result);
 		strcpy(str, result);
 	}
 		
@@ -316,9 +284,9 @@ void convert_str_to_binary(int length, char *str, char *ARE) {
 void convert_first_word_to_binary(int length, char* str, char* ARE) {
 
 	char* token;
-	char binary[16];
+	char binary[WORD_LEN];
 	int first_number = 1;
-	char result[30] = "";
+	char result[FILED_SIZE] = "";
 	
 	token = strtok(str, ",");
 	while (token != NULL) {
@@ -334,7 +302,6 @@ void convert_first_word_to_binary(int length, char* str, char* ARE) {
 	}
 	
 	strcat(result, ARE);
-	printf("Concatenated Binary: %s\n", result);
 	strcpy(str, result);
 }
 
@@ -354,7 +321,6 @@ void decimal_to_binary(int length, int decimal, char binary[])
 	{
 		memset(binary, '0', length);
 		binary[length] = '\0';
-		/*  printf(" Binary number is: %s\n", binary); */
 		return;
 	}
 	/* Convert the decimal number to binary */
@@ -421,6 +387,14 @@ int opcode_process(char* first_word, char* rest_of_line, int* IC,int line,instru
 	char* first_word_to_binary = (char*)calloc(16, sizeof(char)); /* Allocate memory for the binary string */
 	char* second_word_to_binary = (char*)calloc(16, sizeof(char)); /* Allocate memory for the binary string */
 	char* third_word_to_binary = (char*)calloc(16, sizeof(char)); /* Allocate memory for the binary string */
+
+	if (first_word_to_binary == NULL || second_word_to_binary == NULL || third_word_to_binary == NULL) {
+        fprintf(stderr, "Error: malloc failed\n");
+        free(first_word_to_binary);
+        free(second_word_to_binary);
+        free(third_word_to_binary);
+        return 0;
+    }
 	
 	if (valid_num_argument(first_word, rest_of_line, &num_of_opcode)) {
 		if(!parsing_arg(first_word, rest_of_line, first_word_to_binary, second_word_to_binary, third_word_to_binary,
@@ -503,3 +477,63 @@ void free_data_image(data_image* data_image_head) {
 	data_image_head = NULL;
 }
 
+
+unsigned int binaryToOctal(const char *binary) {
+    unsigned int octal = 0;
+    unsigned int power = 1;
+    int len = strlen(binary);
+    int i;
+
+    for (i = len - 1; i >= 0; i--) {
+        if (binary[i] == '1') {
+            octal += power;
+        }
+        power *= 2;
+    }
+
+    return octal;
+}
+
+void copyAndConvertFile(char *sourceFile, char *destinationFile) {
+    FILE *src = fopen(sourceFile, "r");
+    FILE *dest = fopen(destinationFile, "w");
+    char buffer[256];
+
+    if (!src || !dest) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    
+
+
+    if (fgets(buffer, sizeof(buffer), src)) {
+        fputs(buffer, dest);
+    }
+
+
+    while (fgets(buffer, sizeof(buffer), src)) {
+        unsigned int address;
+        char binary[128] = "";
+
+
+        int result = sscanf(buffer, "%u\t%127[^\n]", &address, binary);
+
+
+        if (result == 1 || strlen(binary) == 0) {
+
+            fprintf(dest, "%04u 00001\n", address);
+        } else if (result == 2) {
+
+            unsigned int octal = binaryToOctal(binary);
+
+
+            fprintf(dest, "%04u %05o\n", address, octal);
+        } else {
+            fprintf(stderr, "Failed to parse line: %s", buffer);
+        }
+    }
+
+    fclose(src);
+    fclose(dest);
+}

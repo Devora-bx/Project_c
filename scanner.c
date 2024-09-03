@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "globals.h"
 #include "first_pass.h"
 char* INSTRUCTION[] = { ".data",".string",".extern",".entry" };
@@ -58,23 +59,35 @@ int instr_detection(char* str) {
 	return 0; /* Return 0 if the string is not a valid instruction */
 }
 
-int instr_data_detection(char* first_word, char* rest_of_line, int* DC, int line, data_image** data_image_head) {
-	/* Return 0 if the string is NULL */
-	if (first_word == NULL) {
-		return 0;
-	}
-	if (strcmp(first_word, ".data") == 0) {
-		check_valid_data(rest_of_line, DC, line, data_image_head);
-		return 1;
-	}
-	else if (strcmp(first_word, ".string") == 0) {
-		check_valid_string(rest_of_line, DC, line, data_image_head);
-		return 1;
-	}
+int instr_data_detection(char *str,char* first_word, char* rest_of_line, int* DC, int line, data_image** data_image_head) {
+    /* Return 0 if the string is NULL */
+    if (first_word == NULL) {
+        return 0;
+    }
+    if (strcmp(first_word, ".data") == 0) {
+        check_valid_data(rest_of_line, DC, line, data_image_head);
+        return 1;
+    }
+    else if (strcmp(first_word, ".string") == 0) {
+        char *start_of_string = strstr(str, ".string");
 
-	return 0;
+        if (start_of_string) {
+
+            start_of_string += strlen(".string"); /* Move the pointer to the end of the .string keyword */
+
+            while (*start_of_string == ' ' || *start_of_string == '\t') { /* Skip over any spaces or tabs following .string */
+                start_of_string++;
+            }
+            strcpy(rest_of_line, start_of_string); /* Copy the rest of the line after .string into rest_of_line */
+
+            rest_of_line[strcspn(rest_of_line, "\n")] = '\0'; /* Remove the newline character from rest_of_line */
+        }
+        check_valid_string(rest_of_line, DC, line, data_image_head);
+        return 1;
+    }
+
+    return 0;
 }
-
 int opcode_detection(char* str) {
 	int i;
 
@@ -209,12 +222,12 @@ int parsing_arg(char* name_of_opcode, char* arguments, char* first_word_to_binar
 
         if (type_of_source_arg != -3 && type_of_source_arg != -2) {/*if its valid type*/
             num_arg_source = detection_argument(source_arg + 1); /* Without the first character */
-            // printf("Source argument after detection: %d\n", num_arg_source);
+            
         }
 
         if (type_of_target_arg != -3 && type_of_target_arg != -2) {
             num_arg_target = detection_argument(target_arg + 1); /* Without the first character */
-            // printf("Target argument after detection: %d\n", num_arg_target);
+          
         }
 
 		if(num_arg_source == -1 ){
@@ -230,41 +243,40 @@ int parsing_arg(char* name_of_opcode, char* arguments, char* first_word_to_binar
 				(*detected_label_on_first_pass) ++;
 			}
 			else{
-				printf("invalid argument");
 				return 0;
 			}			
 		}
     
 
     if (validateParameters(name_of_opcode, &num_of_opcode, type_of_target_arg, type_of_source_arg)) {
-        // כתיבת המילה הראשונה - תמיד תישאר כפי שהיא
+        
 sprintf(first_word_to_binary, "%d,%d,%d", num_of_opcode, type_of_source_arg, type_of_target_arg);
 *fieldBitSize1 = 4;
 
-// טיפול במילה השנייה
+
 if (type_of_source_arg == -2) {
-    // אם ארגומנט המקור ריק, כותבים את פרטי ארגומנט היעד במילה השנייה
+   
     if (type_of_target_arg == 0) {
-        // אם ארגומנט היעד הוא בשיטת מיעון מיידי
+        
         sprintf(second_word_to_binary, "%d", num_arg_target);
         *fieldBitSize2 = 12;
     } else if (type_of_target_arg > 1) {
-        // אם ארגומנט היעד הוא רגיסטר
+       
         sprintf(second_word_to_binary, "0,0,0,%d", num_arg_target);
         *fieldBitSize2 = 3;
     } else if (type_of_target_arg == 1) {
-        // אם ארגומנט היעד הוא תווית
-        sprintf(second_word_to_binary, "");
+        
+        strcpy(second_word_to_binary, "");
         *fieldBitSize2 = 0;
     } else if(type_of_target_arg == -2){
 		sprintf(second_word_to_binary, "NULL");/*both empty*/
     	*fieldBitSize3 = 0;
 	}
-    // המילה השלישית תהיה NULL
+   
     sprintf(third_word_to_binary, "NULL");
     *fieldBitSize3 = 0;
 } else {
-    // אם ארגומנט המקור לא ריק, כותבים את פרטי המקור והיעד בהתאם לסוג שלהם
+ 
      if (type_of_source_arg == 0) {
         sprintf(second_word_to_binary, "%d", num_arg_source);
         *fieldBitSize2 = 12;
@@ -272,7 +284,7 @@ if (type_of_source_arg == -2) {
         sprintf(second_word_to_binary, "0,0,%d,0", num_arg_source);
         *fieldBitSize2 = 3;
     } else if (type_of_source_arg == 1) {
-        sprintf(second_word_to_binary, "");
+        strcpy(second_word_to_binary, "");
         *fieldBitSize2 = 0;
     }
 
@@ -283,16 +295,15 @@ if (type_of_source_arg == -2) {
         sprintf(third_word_to_binary, "0,0,0,%d", num_arg_target);
         *fieldBitSize3 = 3;
     } else if (type_of_target_arg == 1) {
-        sprintf(third_word_to_binary, "");
+        strcpy(third_word_to_binary, ""); 
         *fieldBitSize3 = 0;
     }
 }
 
-// אם שני הארגומנטים הם רגיסטרים
 if (type_of_source_arg > 1 && type_of_target_arg > 1) {
     sprintf(second_word_to_binary, "0,0,%d,%d", num_arg_source, num_arg_target);
     *fieldBitSize2 = 3;
-    // המילה השלישית תהיה NULL
+    
     sprintf(third_word_to_binary, "NULL");
     *fieldBitSize3 = 0;
 }
@@ -322,11 +333,7 @@ void identifyAddressingMode(char* source_arg, char* target_arg, int* type_of_sou
     if ((*type_of_target_arg == -3) && is_valid_label(target_arg)) {
         *type_of_target_arg = 1;
     }
-    /* else {
-        printf("The first char of source is: %c\n", first_char_of_source);
-    } */
-    // printf("The type of source is: %d\n", *type_of_source_arg);
-    // printf("The type of target is: %d\n", *type_of_target_arg);
+    
 }
 
 
@@ -366,8 +373,35 @@ bool check_operand_start(char *operand) {
     int i;
     for (i = 0; i < 3; i++) {
         if (operand[0] == arr_type_of_arg[i].first_char) {
-            return true;  // המחרוזת מתחילה באחד מהתווים שבמערך
+            return true;  
         }
     }
-    return false;  // המחרוזת לא מתחילה באף אחד מהתווים שבמערך
+    return false;  
+}
+
+int is_rest_of_line_valid(char *str) {  
+    
+    if (*str == '\0') {
+        return 1;  /*valid*/ 
+    }
+
+    while (*str) {
+
+        if (!isspace(*str)) {
+            return 0;/*not valid*/
+        }
+        str++;
+    }
+
+    return 1;  /*valid*/   
+}
+
+bool is_alphanumeric_string(const char* str) {
+    while (*str) {
+        if (!isalnum((unsigned char)*str)) {
+            return false;  /*Found a non-alphanumeric character*/ 
+        }
+        str++;
+    }
+    return true;  /*All characters are alphanumeric*/ 
 }

@@ -85,29 +85,6 @@ void remove_spaces_next_to_comma(char* str) {
 		}
 	}
 }
-/*////////////////// all this function above cleaning the files///////////////////////////////////
-
-/void readMacrosFromFile(const char *filename, Macro **head) {
-	FILE *file = fopen(filename, "r");
-	if (file == NULL) {
-		perror("Failed to open file");
-		return;
-	}
-
-	char line[1024];
-	while (fgets(line, sizeof(line), file)) {
-		if (strncmp(line, "macr", 4) == 0) {//if there a define of macro add it to the macro table//
-			char name[81];
-			char content[768];
-			if (sscanf(line, "macr %255s %767[^\n]", name, content) == 2) {
-				printf("will added");
-			}
-		}
-	}
-
-	fclose(file);
-}
-/////////////////////////////////////////////////////////////////////////////////////*/
 
 void* handle_malloc(size_t size) {
 	void* ptr = malloc(size);
@@ -154,7 +131,7 @@ node* search_list(node* head, char* name, char* line, int* found) {
 }
 int is_valid_macro_name(char* name_macr) {
 
-	return(!instr_detection(name_macr) && !opcode_detection(name_macr) && !reg_detection(name_macr) && !extra_char_detection(name_macr));
+	return(!instr_detection(name_macr) && !opcode_detection(name_macr) && !reg_detection(name_macr));
 }
 
 void add_macro_to_list(node** head, char* name, char* content, int line_num, node* temp) {
@@ -260,7 +237,7 @@ char* replace_all_mcros(char* file_name, node* head) {
 	char* new_file;
 	char str[MAX_LINE_LENGTH];
 	char strcopy[MAX_LINE_LENGTH];
-	char* first_token;
+	char *first_token;
 
 	inFile = fopen(file_name, "r");
 	if (inFile == NULL) {
@@ -283,7 +260,7 @@ char* replace_all_mcros(char* file_name, node* head) {
 		strcpy(strcopy, str);
 		first_token = strtok(strcopy, " ");
 
-		if ((strtok(NULL, " ") == NULL) && !is_space_or_tab(*str)) {
+		if (first_token != NULL && strtok(NULL, " ") == NULL && !is_space_or_tab(*str)) {
 			node* current = head;
 			int found = 0;
 			while (current) {

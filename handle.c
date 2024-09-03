@@ -31,22 +31,22 @@ int check_valid_data_comma(char* rest_of_line) {
 }
 /* Function to check if a string is a valid integer (positive or negative) */
 int is_valid_integer(char* rest_of_line) {
-	/*Handle empty strings or strings with only non-digit characters*/
-	if (*rest_of_line == '\0') return 0;
+    /*Handle empty strings or strings with only non-digit characters*/
+    if (*rest_of_line == '\0') return 0;
 
-	/*Skip optional leading '+' or '-'*/
-	if (*rest_of_line == '+' || *rest_of_line == '-') rest_of_line++;
+    /*Skip optional leading '+' or '-'*/
+    if (*rest_of_line == '+' || *rest_of_line == '-') rest_of_line++;
 
-	/*Ensure there are digits left after the optional sign*/
-	if (*rest_of_line == '\0') return 0; /* Must have at least one digit*/
+    /*Ensure there are digits left after the optional sign*/
+    if (*rest_of_line == '\0') return 0; /* Must have at least one digit*/
 
-	/*Check if the remaining string is composed only of digits*/
-	while (*rest_of_line) {
-		if (!isdigit(*rest_of_line)) return 0; /*If it's not a digit, invalid*/
-		rest_of_line++;
-	}
+    /*Check if the remaining string is composed only of digits*/
+    while (*rest_of_line) {
+        if (!isdigit(*rest_of_line)) return 0; /*If it's not a digit, invalid*/
+        rest_of_line++;
+    }
 
-	return 1;
+    return 1;
 }
 int starts_and_ends_with_quote(char* rest_of_line) {
 	int length = strlen(rest_of_line);

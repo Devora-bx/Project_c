@@ -12,19 +12,23 @@ int implement_second_pass(char file_name[],label** label_head,instruction_memory
     char first_word[MAX_LINE_LENGTH] = {0};
     char second_word[MAX_LINE_LENGTH] = {0};
     char rest_of_line[MAX_LINE_LENGTH] = {0};
-    char operands[MAX_LINE_LENGTH] = {0};
     char *ent_file, *ext_file;
     FILE *fp, *ent_p, *ext_p;
-    
+    int address_of_ent_label = 0;
     int line = 0;
-    int num_of_section_in_line;
+    long fileSize1;
+    long fileSize2;
     fp=fopen(file_name, "r");
     if(fp == NULL){
         printf("Failed to open file: %s\n", file_name);
-        return 1;
+        return 0;
     }
+
+    
+
     ent_file = add_new_file(file_name, ".ent");
     ent_p = fopen(ent_file, "w");
+
     if (ent_p == NULL) {
         printf("Failed to open file: %s\n", ent_file);
         fclose(fp);  
@@ -48,34 +52,46 @@ int implement_second_pass(char file_name[],label** label_head,instruction_memory
         memset(rest_of_line, 0, MAX_LINE_LENGTH);
         
          sscanf(str, " %s %s %[^\n]", first_word, second_word, rest_of_line);
-        /*printf("Parsed line %d: first_word='%s', second_word='%s', rest_of_line='%s'\n", line, first_word, second_word, rest_of_line);*/
-        printf("%s, %d\n",first_word,line);
-        if(is_empty_line(str)){
-            line++;
-             skip_to_next_line(fp);
+        if(is_empty_line(str)){     
+             continue;
         }
         if(endsWithColon(first_word)){
-            if (is_instruction(second_word)){/*becous it's can't be .entry or .extern*/
-                skip_to_next_line(fp);
+            if (is_instruction(second_word)){/*becous it's can't be .entry */
+                continue;
             }
-            else{
-                
+            else{            
                 chek_for_label_argument(ext_p,rest_of_line,line,label_head,list_head,data_image_head);
             }
         }
-        else if(is_instruction(first_word)){
-            skip_to_next_line(fp);
-        }
-        else {
+        else if(opcode_detection(first_word)){
             chek_for_label_argument(ext_p,second_word,line,label_head,list_head,data_image_head);
         }
+        else if(strcmp(first_word,".entry") == 0){
+            address_of_ent_label = check_valid_entry(second_word,*label_head);/*if the addres is 0 its fail*/
+            fprintf(ent_p,"%s           %d\n",second_word,address_of_ent_label);
+        }
+        
     }    
     fclose(fp);
+
+  fseek(ext_p, 0, SEEK_END);
+    fseek(ent_p, 0, SEEK_END);
+
+    fileSize1 = ftell(ent_p);
+    fileSize2 = ftell(ext_p);
+
     fclose(ext_p);
-    /* שחרור זיכרון שהוקצה לשם הקובץ החדש */
+    fclose(ent_p);
+
+
+    if (fileSize1 == 0){
+        remove(ent_file);
+        
+    }
+    if(fileSize2 == 0){
+        remove(ext_file);
+    }
+    free(ent_file);
     free(ext_file);
-
-    printf("File second pass closed: %s\n", file_name);
-    return 0; 
-
+return 1;
 }

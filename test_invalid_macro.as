@@ -10,7 +10,7 @@ LOOP:   jmp L1
     macr M1
 sub *r1, *r9
     bne END
-    endmacr
+    endmacr%%%
 
     .entry LOOP
 prn #-5
@@ -32,7 +32,7 @@ K:      .data 4    ,  ,  -55,4,4,4,6
     macr M1
 mov r1, val
 add r2, r1
-    endmacr
+    endmacr %
 M1
 ABC: mov XYZ, *r3
 reg1: .data 6,5,-555,66

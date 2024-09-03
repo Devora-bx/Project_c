@@ -58,7 +58,7 @@ char* remove_extra_spaces_file(char file_name[]) {
 }
 
 int add_macro(char* file_name, node** head) {
-
+	char rest_of_line[MAX_LINE_LENGTH];
 	char line[MAX_LINE_LENGTH];
 	char* macro_name = NULL;
 	char macro_content[MAX_LINE_LENGTH * 100] = "";
@@ -67,6 +67,7 @@ int add_macro(char* file_name, node** head) {
 	int mcro_line;
 	int found = 0;
 	node* temp;
+	int isvalid = 1;
 	char temp_name[MAX_LINE_LENGTH];
 
 	FILE* file = fopen(file_name, "r");
@@ -83,16 +84,21 @@ int add_macro(char* file_name, node** head) {
 			/* add search in the list */
 			mcro_line = line_number;
 
-			sscanf(line + 5, "%s", temp_name);
+			rest_of_line[0] = '\0';
+            
+            sscanf(line + 5, "%s %[^\n]", temp_name, rest_of_line);
 
 			temp = search_list(*head, temp_name, line, &found);
 
 			if (found) {
-
+				isvalid = 0;
 				continue;
 			}
 			if (is_valid_macro_name(temp_name)) {
-
+				if(!is_rest_of_line_valid(rest_of_line)){
+                    fprintf(stderr, "Extra characters in line %d\n", line_number);
+					isvalid = 0;
+                }
 				is_macro = 1;
 				macro_content[0] = '\0';
 				macro_name = handle_malloc((strlen(temp_name) + 1) * sizeof(char));
@@ -101,10 +107,18 @@ int add_macro(char* file_name, node** head) {
 			else {
 
 				fprintf(stderr, "Invalid macro name at line %d: %s\n", line_number, temp_name);
+				isvalid = 0;
 				continue;
 			}
 		}
 		else if (is_macro && strncmp(line, "endmacr", 7) == 0) {
+			rest_of_line[0] = '\0';
+        
+            sscanf(line + 7, "%s", rest_of_line);
+            if(!is_rest_of_line_valid(rest_of_line)){
+                fprintf(stderr, "Extra characters in line %d\n", line_number);
+				isvalid = 0;
+            }
 			add_macro_to_list(head, macro_name, macro_content, mcro_line, temp);
 
 			is_macro = 0;
@@ -119,8 +133,11 @@ int add_macro(char* file_name, node** head) {
 	if (macro_name != NULL) {
 		free(macro_name);
 	}
-
+	
 	fclose(file);
+	if(!isvalid){
+		return 0;
+	}
 	return 1;
 }
 void printlist(node* head) {
